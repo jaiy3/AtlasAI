@@ -1,10 +1,5 @@
-import express from "express";
-
-const app = express();
-
-app.get("/", (req, res) => {
-  res.send("AtlasAI Backend Running 🚀");
-});
+import "dotenv/config";
+import app from "./app";
 
 const PORT = 3001;
 

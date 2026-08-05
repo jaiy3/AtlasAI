@@ -23,3 +23,4 @@ client/dist
 # Prisma
 server/prisma/dev.db
 server/prisma/dev.db-journal
+/src/generated/prisma
