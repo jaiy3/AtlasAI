@@ -4,13 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "dev": "node index.js"
-},
+    "dev": "nodemon --watch . --exec tsx server.ts"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
     "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.1.2",
+    "nodemon": "^3.1.14",
+    "tsx": "^4.23.8",
+    "typescript": "5.8.3"
   }
 }
