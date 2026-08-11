@@ -1,8 +1,4 @@
-import { useState } from "react";
-
-import Card from "../Card";
-import Input from "../Input";
-import Button from "../Button";
+import "./auth.css";
 
 type LoginProps = {
   onSubmit: (
@@ -11,9 +7,7 @@ type LoginProps = {
   ) => void | Promise<void>;
 
   loading?: boolean;
-
   error?: string;
-
   onRegister?: () => void;
 };
 
@@ -23,83 +17,122 @@ export default function Login({
   error = "",
   onRegister,
 }: LoginProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
 
-  function handleSubmit() {
+    const formData = new FormData(event.currentTarget);
+
+    const email = String(formData.get("email") || "");
+    const password = String(formData.get("password") || "");
+
     onSubmit(email, password);
   }
 
   return (
-    <Card>
-      <div className="auth-heading">
-        <div className="auth-icon">↗</div>
+    <main className="auth-page">
+      <div className="auth-background-glow auth-glow-one" />
+      <div className="auth-background-glow auth-glow-two" />
 
-        <div>
-          <span className="auth-eyebrow">
-            WELCOME BACK
-          </span>
+      <div className="auth-shell">
+        <div className="auth-brand">
+          <div className="auth-brand-mark">↗</div>
 
-          <h1>Sign in to AtlasAI</h1>
-
-          <p>
-            Continue analyzing your crypto portfolio
-            with intelligent insights.
-          </p>
-        </div>
-      </div>
-
-      <div className="auth-form">
-        <Input
-          label="Email"
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-
-        <Input
-          label="Password"
-          type="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-
-        {error && (
-          <div className="auth-error">
-            {error}
+          <div>
+            <div className="auth-brand-name">AtlasAI</div>
+            <div className="auth-brand-tagline">
+              Intelligent crypto portfolio analytics
+            </div>
           </div>
-        )}
+        </div>
 
-        <Button
-          onClick={handleSubmit}
-          style={{
-            width: "100%",
-            marginTop: 16,
-          }}
-        >
-          {loading ? "Signing in..." : "Sign in →"}
-        </Button>
+        <section className="auth-card">
+          <div className="auth-card-header">
+            <div className="auth-icon">↗</div>
+
+            <div>
+              <span className="auth-eyebrow">
+                WELCOME BACK
+              </span>
+
+              <h1>Sign in to AtlasAI</h1>
+
+              <p>
+                Continue analyzing your crypto portfolio
+                with intelligent insights.
+              </p>
+            </div>
+          </div>
+
+          {error && (
+            <div className="auth-message auth-message-error">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <div className="auth-field">
+              <label htmlFor="login-email">Email</label>
+
+              <input
+                id="login-email"
+                name="email"
+                type="email"
+                placeholder="you@example.com"
+                autoComplete="email"
+              />
+            </div>
+
+            <div className="auth-field">
+              <label htmlFor="login-password">
+                Password
+              </label>
+
+              <input
+                id="login-password"
+                name="password"
+                type="password"
+                placeholder="Enter your password"
+                autoComplete="current-password"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="auth-submit"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <span className="auth-spinner" />
+                  Signing in...
+                </>
+              ) : (
+                <>
+                  Sign in
+                  <span>→</span>
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="auth-divider">
+            <span>New to AtlasAI?</span>
+          </div>
+
+          <button
+            type="button"
+            className="auth-secondary-button"
+            onClick={onRegister}
+          >
+            Create an account
+          </button>
+
+          <p className="auth-footer">
+            Your portfolio data stays connected to your
+            wallet.
+          </p>
+        </section>
       </div>
-
-      <div className="auth-divider">
-        <span />
-        <p>New to AtlasAI?</p>
-        <span />
-      </div>
-
-      <button
-        type="button"
-        className="auth-secondary-button"
-        onClick={onRegister}
-      >
-        Create an account
-      </button>
-
-      <p className="auth-footnote">
-        Your portfolio data stays connected to your wallet.
-      </p>
-    </Card>
+    </main>
   );
 }
