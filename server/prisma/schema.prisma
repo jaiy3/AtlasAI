@@ -9,11 +9,14 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  firstName String
-  lastName  String
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String
+  firstName     String
+  lastName      String
+
+  walletAddress String?  @unique
+  walletNonce   String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,87 +1,140 @@
+import "./wallet-help.css";
+
 export default function WalletHelp() {
   return (
     <div className="wallet-help-page">
-      <div className="wallet-help-card">
-        <h1>Get a Wallet</h1>
+      <div className="wallet-help-container">
+        {/* Brand */}
+        <div className="wallet-help-brand">
+          <div className="wallet-help-brand-mark">
+            A
+          </div>
 
-        <p className="wallet-help-intro">
-          To connect to AtlasAI, you'll need a compatible crypto wallet.
-          Wallets are apps or browser extensions that let you connect to
-          Web3 applications.
-        </p>
+          <div>
+            <strong>AtlasAI</strong>
 
-        <h2>Already have a wallet?</h2>
+            <span>
+              Intelligent portfolio analytics
+            </span>
+          </div>
+        </div>
 
-        <p>
-          If you already have a compatible wallet, return to AtlasAI and
-          choose your wallet from the Connect Wallet menu.
-        </p>
+        {/* Main card */}
+        <div className="wallet-help-card">
+          <div className="wallet-help-icon">
+            ◈
+          </div>
 
-        <h2>Don't have a wallet yet?</h2>
+          <span className="wallet-help-eyebrow">
+            GET CONNECTED
+          </span>
 
-        <p>
-          You can install a wallet such as Rainbow, MetaMask or any compatible WalletConnect wallet on your
-          device, then return to AtlasAI and connect it.
-        </p>
+          <h1>Get a crypto wallet</h1>
 
-        <div className="wallet-help-options">
-          <div className="wallet-help-option">
-            <h3>Rainbow</h3>
+          <p className="wallet-help-intro">
+            A crypto wallet lets you securely connect to
+            AtlasAI and view your portfolio, assets,
+            transactions, and market insights.
+          </p>
 
-            <p>
-              Rainbow is available as a mobile app and browser extension.
-            </p>
-
+          {/* Wallet options */}
+          <div className="wallet-help-options">
             <a
+              className="wallet-help-option"
               href="https://rainbow.me/en/"
               target="_blank"
               rel="noreferrer"
             >
-              Get Rainbow
+              <div className="wallet-option-top">
+                <div className="wallet-option-icon rainbow">
+                  R
+                </div>
+
+                <span className="wallet-option-arrow">
+                  ↗
+                </span>
+              </div>
+
+              <h2>Rainbow</h2>
+
+              <p>
+                A simple, polished wallet for mobile and
+                browser.
+              </p>
+
+              <span className="wallet-option-link">
+                Get Rainbow
+              </span>
             </a>
-          </div>
-
-          <div className="wallet-help-option">
-            <h3>MetaMask</h3>
-
-            <p>
-              MetaMask is available as a mobile app and browser extension.
-            </p>
 
             <a
+              className="wallet-help-option"
               href="https://metamask.io/download/"
               target="_blank"
               rel="noreferrer"
             >
-              Get MetaMask
+              <div className="wallet-option-top">
+                <div className="wallet-option-icon metamask">
+                  M
+                </div>
+
+                <span className="wallet-option-arrow">
+                  ↗
+                </span>
+              </div>
+
+              <h2>MetaMask</h2>
+
+              <p>
+                A popular wallet available on mobile and
+                browser.
+              </p>
+
+              <span className="wallet-option-link">
+                Get MetaMask
+              </span>
             </a>
           </div>
-        </div>
 
-        <div className="wallet-help-walletconnect">
-          <h2>Looking for a WalletConnect wallet?</h2>
+          {/* WalletConnect */}
+          <div className="walletconnect-help">
+            <div className="walletconnect-help-icon">
+              ◇
+            </div>
 
-          <p>
-            WalletConnect connects AtlasAI to compatible wallet apps.
-            If you don't have a wallet yet, you can browse compatible
-            wallets and choose one for your device.
-          </p>
+            <div>
+              <h2>Already have another wallet?</h2>
 
-          <a
-            href="https://walletguide.walletconnect.network/"
-            target="_blank"
-            rel="noreferrer"
+              <p>
+                AtlasAI supports wallets compatible with
+                WalletConnect. Browse available wallets
+                and choose the one that's right for you.
+              </p>
+
+              <a
+                href="https://walletguide.walletconnect.network/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Browse WalletConnect wallets →
+              </a>
+            </div>
+          </div>
+
+          {/* Back */}
+          <button
+            type="button"
+            className="wallet-help-back"
+            onClick={() => window.history.back()}
           >
-            Browse WalletConnect Wallets
-          </a>
+            ← Back to AtlasAI
+          </button>
         </div>
-        
-        <button
-          type="button"
-          onClick={() => window.history.back()}
-        >
-          Back to AtlasAI
-        </button>
+
+        <p className="wallet-help-footer">
+          AtlasAI never asks for your wallet recovery phrase
+          or private keys.
+        </p>
       </div>
     </div>
   );

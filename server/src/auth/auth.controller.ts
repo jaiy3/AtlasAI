@@ -3,6 +3,8 @@ import {
   registerUser,
   loginUser,
   getCurrentUser,
+  createWalletNonce,
+  verifyWallet,
 } from "./auth.service";
 
 export const register = async (req: Request, res: Response) => {
@@ -58,6 +60,72 @@ export const me = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       success: true,
+      data: user,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Something went wrong";
+
+    return res.status(400).json({
+      success: false,
+      message,
+    });
+  }
+};
+
+export const walletNonce = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const result = await createWalletNonce(req.user.userId);
+
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Something went wrong";
+
+    return res.status(400).json({
+      success: false,
+      message,
+    });
+  }
+};
+
+export const walletVerify = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const { walletAddress, signature } = req.body;
+
+    if (!walletAddress || !signature) {
+      return res.status(400).json({
+        success: false,
+        message: "Wallet address and signature are required",
+      });
+    }
+
+    const user = await verifyWallet(
+      req.user.userId,
+      walletAddress,
+      signature
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Wallet verified successfully",
       data: user,
     });
   } catch (error) {

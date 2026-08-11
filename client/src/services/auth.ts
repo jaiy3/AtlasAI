@@ -27,3 +27,38 @@ export const me = async (token: string) => {
 
   return response.data;
 };
+
+export const getWalletNonce = async (token: string) => {
+  const response = await api.post(
+    "/auth/wallet/nonce",
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+export const verifyWallet = async (
+  token: string,
+  walletAddress: string,
+  signature: string
+) => {
+  const response = await api.post(
+    "/auth/wallet/verify",
+    {
+      walletAddress,
+      signature,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
