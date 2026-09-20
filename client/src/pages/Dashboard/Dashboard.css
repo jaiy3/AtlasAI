@@ -1788,3 +1788,17 @@
     height: 190px;
   }
 }
+
+/* Wallet-free demo state */
+.demo-status {
+  color: #6c63ff;
+  background: #f2f0ff;
+}
+
+.demo-status .status-dot {
+  background: #6c63ff;
+}
+
+.wallet-banner-action {
+  margin-left: auto;
+}

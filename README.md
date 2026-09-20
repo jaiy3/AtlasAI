@@ -172,3 +172,6 @@ AtlasAI follows a client-server architecture that separates the React frontend f
                                │
                                ▼
                          AI Service
+## Recruiter demo mode
+
+The dashboard is also available at `/demo`, allowing visitors to explore the market watchlist, AI assistant, empty portfolio/NFT states and transaction UI without connecting a wallet. Connecting a wallet remains optional and enables live wallet-specific data when the user is authenticated.

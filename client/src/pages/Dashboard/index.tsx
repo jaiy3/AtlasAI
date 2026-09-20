@@ -92,6 +92,7 @@ export default function Dashboard() {
       setNfts([]);
       setTransactions([]);
       setActivity([]);
+      setPortfolioError("");
       return;
     }
 
@@ -363,24 +364,7 @@ export default function Dashboard() {
       </header>
 
       <main className="dashboard-main">
-        {!isConnected ? (
-          <section className="connect-state">
-            <div className="connect-icon">
-              ✦
-            </div>
-
-            <h1>Connect your wallet</h1>
-
-            <p>
-              Connect a wallet to unlock your
-              portfolio analytics, market data,
-              and AtlasAI insights.
-            </p>
-
-            <WalletConnect />
-          </section>
-        ) : (
-          <>
+        <>
             {/* Hero */}
             <section className="portfolio-hero">
               <div>
@@ -396,13 +380,13 @@ export default function Dashboard() {
                 </p>
               </div>
 
-              <div className="hero-status">
+              <div className={`hero-status ${!isConnected ? "demo-status" : ""}`}>
                 <span className="status-dot" />
-                Wallet connected
+                {isConnected ? "Wallet connected" : "Demo mode · No wallet connected"}
               </div>
             </section>
 
-            {/* Connected wallet */}
+            {/* Wallet status */}
             <section className="wallet-banner">
               <div className="wallet-banner-icon">
                 ◈
@@ -410,13 +394,21 @@ export default function Dashboard() {
 
               <div>
                 <span>
-                  Connected wallet
+                  {isConnected ? "Connected wallet" : "No wallet connected"}
                 </span>
 
                 <strong>
-                  {address}
+                  {isConnected
+                    ? address
+                    : "Explore the dashboard with live market data"}
                 </strong>
               </div>
+
+              {!isConnected && (
+                <div className="wallet-banner-action">
+                  <WalletConnect />
+                </div>
+              )}
             </section>
 
             {/* Summary */}
@@ -525,8 +517,7 @@ export default function Dashboard() {
                     </strong>
 
                     <p>
-                      ERC-20 tokens held by this
-                      wallet will appear here.
+                      Connect a wallet to load live token balances.
                     </p>
                   </div>
                 </div>
@@ -594,8 +585,7 @@ export default function Dashboard() {
                     </strong>
 
                     <p>
-                      NFTs owned by this wallet
-                      will appear here.
+                      Connect a wallet to load live NFT holdings.
                     </p>
                   </div>
                 </div>
@@ -817,8 +807,8 @@ export default function Dashboard() {
 
                 <p className="ai-description">
                   Ask questions about your
-                  wallet, assets, transactions,
-                  or portfolio activity.
+                  wallet, assets, market data,
+                  transactions, or portfolio activity.
                 </p>
 
                 <textarea
@@ -834,9 +824,9 @@ export default function Dashboard() {
 
                 <div className="ai-footer">
                   <span>
-                    AtlasAI only uses the
-                    portfolio data available
-                    to it.
+                    AtlasAI uses available portfolio
+                    data plus current market data.
+                    Connect a wallet for personalized analysis.
                   </span>
 
                   <button
@@ -975,8 +965,7 @@ export default function Dashboard() {
                     </strong>
 
                     <p>
-                      Recent wallet activity
-                      will appear here.
+                      Connect a wallet to load live transaction history.
                     </p>
                   </div>
                 </div>
@@ -1044,8 +1033,7 @@ export default function Dashboard() {
                 {portfolioError}
               </div>
             )}
-          </>
-        )}
+        </>
       </main>
     </div>
   );
