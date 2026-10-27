@@ -6,37 +6,6 @@ AtlasAI pulls balances, ERC-20 tokens, NFTs and transaction history from Alchemy
 
 **[Try the live demo](https://atlas-ai-ashy-six.vercel.app/demo)** (no account or wallet needed; it loads a well-known public wallet).
 
-## Screenshots
-
-### Authentication
-
-<p align="center">
-  <img src="./docs/screenshots/login.png" width="48%" />
-  <img src="./docs/screenshots/register.png" width="48%" />
-</p>
-
-### Portfolio Dashboard
-
-<p align="center">
-  <img src="./docs/screenshots/dashboard-portfolio.png" width="95%" />
-</p>
-
-### Market Watchlist
-
-<p align="center">
-  <img src="./docs/screenshots/dashboard-watchlist.png" width="95%" />
-</p>
-
-### AI Assistant & Transaction History
-
-<p align="center">
-  <img src="./docs/screenshots/ai-assistance-transactions.png" width="95%" />
-</p>
-
-> Screenshots use representative portfolio values for demonstration purposes. Live portfolio data is retrieved from the connected wallet and supported data providers.
-
----
-
 ## Architecture
 
 ![AtlasAI architecture](docs/architecture.svg)
