@@ -14,9 +14,16 @@ export const alchemyClient = createPublicClient({
   ),
 });
 
+export type RawTokenBalance = {
+  contractAddress: string;
+  tokenBalance: string | null;
+  error?: string | null;
+};
+
 export const getTokenBalances = async (
-  walletAddress: string
-) => {
+  walletAddress: string,
+  contractAddresses: readonly string[]
+): Promise<RawTokenBalance[]> => {
   const response = await fetch(
     `https://eth-mainnet.g.alchemy.com/v2/${alchemyKey}`,
     {
@@ -28,7 +35,7 @@ export const getTokenBalances = async (
         jsonrpc: "2.0",
         id: 1,
         method: "alchemy_getTokenBalances",
-        params: [walletAddress, "erc20"],
+        params: [walletAddress, contractAddresses],
       }),
     }
   );
@@ -45,18 +52,43 @@ export const getTokenBalances = async (
     throw new Error(data.error.message);
   }
 
-  return data.result;
+  return data.result?.tokenBalances ?? [];
 };
 
-export const getNFTs = async (walletAddress: string) => {
+export type PortfolioNFT = {
+  name: string;
+  tokenId: string;
+  image: string | null;
+  collection: { name: string | null };
+};
+
+type AlchemyNFT = {
+  name?: string | null;
+  tokenId?: string;
+  image?: { cachedUrl?: string; thumbnailUrl?: string; originalUrl?: string };
+  contract?: {
+    name?: string | null;
+    isSpam?: boolean;
+    openSeaMetadata?: { collectionName?: string | null };
+  };
+};
+
+/**
+ * NFTs for an owner, normalised for the client. Spam-flagged contracts and
+ * items with neither a name nor an image are dropped.
+ */
+export const getNFTs = async (
+  walletAddress: string,
+  limit = 12
+): Promise<{ totalCount: number; ownedNfts: PortfolioNFT[] }> => {
+  const params = new URLSearchParams({
+    owner: walletAddress,
+    withMetadata: "true",
+    pageSize: "50",
+  });
+
   const response = await fetch(
-    `https://eth-mainnet.g.alchemy.com/nft/v3/${alchemyKey}/getNFTsForOwner?owner=${walletAddress}&withMetadata=true`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
+    `https://eth-mainnet.g.alchemy.com/nft/v3/${alchemyKey}/getNFTsForOwner?${params}`
   );
 
   if (!response.ok) {
@@ -65,9 +97,32 @@ export const getNFTs = async (walletAddress: string) => {
     );
   }
 
-  const data = await response.json();
+  const data = (await response.json()) as {
+    totalCount?: number;
+    ownedNfts?: AlchemyNFT[];
+  };
 
-  return data;
+  const ownedNfts = (data.ownedNfts ?? [])
+    .filter((nft) => !nft.contract?.isSpam)
+    .map((nft) => ({
+      name: nft.name ?? `#${nft.tokenId ?? "?"}`,
+      tokenId: nft.tokenId ?? "",
+      image:
+        nft.image?.thumbnailUrl ??
+        nft.image?.cachedUrl ??
+        nft.image?.originalUrl ??
+        null,
+      collection: {
+        name:
+          nft.contract?.openSeaMetadata?.collectionName ??
+          nft.contract?.name ??
+          null,
+      },
+    }))
+    .filter((nft) => nft.image || nft.name)
+    .slice(0, limit);
+
+  return { totalCount: data.totalCount ?? ownedNfts.length, ownedNfts };
 };
 
 export const getTransactions = async (

@@ -127,6 +127,10 @@ export default function Login({
             Create an account
           </button>
 
+          <a className="auth-demo-link" href="/demo">
+            Explore the live demo, no account needed →
+          </a>
+
           <p className="auth-footer">
             Your portfolio data stays connected to your
             wallet.

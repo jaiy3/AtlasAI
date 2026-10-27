@@ -21,3 +21,11 @@ pnpm-debug.log*
 # IDE files
 .vscode/
 .idea/
+# AI assistant tooling (local only)
+.agents/
+.windsurf/
+.claude/
+**/.agents/
+**/.windsurf/
+**/.claude/
+skills-lock.json

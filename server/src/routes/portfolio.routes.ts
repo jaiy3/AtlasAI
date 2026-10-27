@@ -1,28 +1,28 @@
 import { Router } from "express";
+import { isAddress } from "viem";
 import { authenticate } from "../middleware/auth.middleware";
 import { getPortfolio } from "../services/portfolio.service";
 
 const router = Router();
 
 router.get("/:address", authenticate, async (req, res) => {
-  try {
-    const address = req.params.address as `0x${string}`;
+  const address = String(req.params.address);
 
-    const portfolio = await getPortfolio(address);
-
-    return res.status(200).json({
-      success: true,
-      data: portfolio,
-    });
-  } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Failed to fetch portfolio";
-
-    return res.status(500).json({
+  if (!isAddress(address)) {
+    return res.status(400).json({
       success: false,
-      message,
+      message: "Invalid Ethereum address",
+    });
+  }
+
+  try {
+    const portfolio = await getPortfolio(address);
+    return res.status(200).json({ success: true, data: portfolio });
+  } catch (error) {
+    console.error("Portfolio request failed:", error);
+    return res.status(502).json({
+      success: false,
+      message: "Unable to load portfolio from the data provider",
     });
   }
 });

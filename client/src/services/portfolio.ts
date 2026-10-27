@@ -15,3 +15,8 @@ export const getPortfolio = async (
 
   return response.data;
 };
+/** Public demo portfolio (a well-known public wallet). No login or wallet needed. */
+export const getDemoPortfolio = async () => {
+  const response = await api.get("/demo/portfolio");
+  return response.data;
+};

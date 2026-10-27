@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
-import { formatEther } from "viem";
 
 import WalletConnect from "../../components/WalletConnect";
-import { getPortfolio } from "../../services/portfolio";
+import { getDemoPortfolio, getPortfolio } from "../../services/portfolio";
 import { getTokenPrices } from "../../services/prices";
 import type { TokenPrice } from "../../services/prices";
 import { askPortfolioAI } from "../../services/ai";
@@ -12,16 +11,35 @@ import "./Dashboard.css";
 
 type TokenBalance = {
   contractAddress: string;
-  tokenBalance: string;
-  error?: string;
+  symbol: string;
+  name: string;
+  balance: string;
+  priceUsd: number | null;
+  valueUsd: number | null;
 };
+
+const usd = (value: number | null | undefined) =>
+  value === null || value === undefined
+    ? "—"
+    : value.toLocaleString("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: value >= 1000 ? 0 : 2,
+      });
+
+const amount = (value: string, maxDigits = 4) =>
+  Number(value).toLocaleString("en-US", {
+    maximumFractionDigits: maxDigits,
+  });
+
+const shortAddress = (value?: string) =>
+  value ? `${value.slice(0, 6)}…${value.slice(-4)}` : "";
 
 type NFT = {
   name?: string;
-  description?: string;
-  image?: string;
+  image?: string | null;
   collection?: {
-    name?: string;
+    name?: string | null;
   };
   tokenId?: string;
 };
@@ -62,6 +80,11 @@ export default function Dashboard() {
   const [activity, setActivity] = useState<ActivityDay[]>([]);
 
   const [loadingBalance, setLoadingBalance] = useState(false);
+  const [totalValueUsd, setTotalValueUsd] = useState<number | null>(null);
+  const [demoWallet, setDemoWallet] = useState<{
+    label: string;
+    address: string;
+  } | null>(null);
   const [portfolioError, setPortfolioError] = useState("");
 
   const [watchlist, setWatchlist] =
@@ -83,23 +106,18 @@ export default function Dashboard() {
   const [aiError, setAiError] = useState("");
 
   /*
-   * Load portfolio data
+   * Load portfolio data.
+   * Connected wallet -> the user's own portfolio (authenticated).
+   * No wallet -> a public demo wallet, so the dashboard is never empty.
    */
   useEffect(() => {
-    if (!address || !isConnected) {
-      setBalance(null);
-      setTokens([]);
-      setNfts([]);
-      setTransactions([]);
-      setActivity([]);
-      setPortfolioError("");
-      return;
-    }
+    let cancelled = false;
 
     const loadPortfolio = async () => {
+      const useDemo = !address || !isConnected;
       const token = localStorage.getItem("token");
 
-      if (!token) {
+      if (!useDemo && !token) {
         setPortfolioError("Please log in to AtlasAI first.");
         return;
       }
@@ -108,28 +126,31 @@ export default function Dashboard() {
         setLoadingBalance(true);
         setPortfolioError("");
 
-        const response = await getPortfolio(token, address);
+        const response = useDemo
+          ? await getDemoPortfolio()
+          : await getPortfolio(token as string, address as string);
 
-        const weiBalance = BigInt(response.data.balance);
-        const ethBalance = formatEther(weiBalance);
+        if (cancelled) return;
 
-        const tokenBalances =
-          response.data.tokens?.tokenBalances ?? [];
+        const data = response.data;
+        const tokenBalances: TokenBalance[] = data.tokens ?? [];
+        const ownedNfts: NFT[] = data.nfts?.ownedNfts ?? [];
+        const recentTransactions: Transaction[] = data.transactions ?? [];
 
-        const ownedNfts =
-          response.data.nfts?.ownedNfts ?? [];
-
-        const recentTransactions =
-          response.data.transactions ?? [];
-
-        setBalance(ethBalance);
+        setDemoWallet(
+          useDemo
+            ? { label: data.label ?? "Demo wallet", address: data.walletAddress }
+            : null
+        );
+        setBalance(data.ethBalance ?? null);
+        setTotalValueUsd(data.totals?.totalValueUsd ?? null);
         setTokens(tokenBalances);
         setNfts(ownedNfts);
         setTransactions(recentTransactions);
 
         setPortfolioSummary({
           tokens: tokenBalances.length,
-          nfts: ownedNfts.length,
+          nfts: data.nfts?.totalCount ?? ownedNfts.length,
           transactions: recentTransactions.length,
         });
 
@@ -137,7 +158,6 @@ export default function Dashboard() {
 
         for (let i = 6; i >= 0; i--) {
           const date = new Date();
-
           date.setHours(0, 0, 0, 0);
           date.setDate(date.getDate() - i);
 
@@ -145,45 +165,29 @@ export default function Dashboard() {
             weekday: "short",
           });
 
-          const count = recentTransactions.filter(
-            (transaction: Transaction) => {
-              if (!transaction.metadata?.blockTimestamp) {
-                return false;
-              }
+          const count = recentTransactions.filter((transaction) => {
+            if (!transaction.metadata?.blockTimestamp) return false;
+            const transactionDate = new Date(transaction.metadata.blockTimestamp);
+            return transactionDate.toDateString() === date.toDateString();
+          }).length;
 
-              const transactionDate = new Date(
-                transaction.metadata.blockTimestamp
-              );
-
-              return (
-                transactionDate.getFullYear() ===
-                  date.getFullYear() &&
-                transactionDate.getMonth() ===
-                  date.getMonth() &&
-                transactionDate.getDate() ===
-                  date.getDate()
-              );
-            }
-          ).length;
-
-          days.push({
-            label,
-            count,
-          });
+          days.push({ label, count });
         }
 
         setActivity(days);
       } catch (error) {
         console.error(error);
-        setPortfolioError(
-          "Unable to load portfolio data."
-        );
+        if (!cancelled) setPortfolioError("Unable to load portfolio data.");
       } finally {
-        setLoadingBalance(false);
+        if (!cancelled) setLoadingBalance(false);
       }
     };
 
     loadPortfolio();
+
+    return () => {
+      cancelled = true;
+    };
   }, [address, isConnected]);
 
   /*
@@ -292,8 +296,10 @@ export default function Dashboard() {
       setAiResponse("");
 
       const portfolio = {
-        wallet: address,
+        wallet: demoWallet?.address ?? address,
+        walletLabel: demoWallet?.label,
         ethBalance: balance,
+        totalValueUsd,
         tokens,
         nfts,
         transactions,
@@ -369,20 +375,21 @@ export default function Dashboard() {
             <section className="portfolio-hero">
               <div>
                 <span className="eyebrow">
-                  YOUR PORTFOLIO
+                  {demoWallet ? "DEMO PORTFOLIO" : "YOUR PORTFOLIO"}
                 </span>
 
                 <h1>Portfolio</h1>
 
                 <p>
-                  Track your assets, activity,
-                  and market data in one place.
+                  {totalValueUsd !== null && !loadingBalance
+                    ? `Estimated value ${usd(totalValueUsd)} across ETH and tracked tokens.`
+                    : "Track your assets, activity, and market data in one place."}
                 </p>
               </div>
 
               <div className={`hero-status ${!isConnected ? "demo-status" : ""}`}>
                 <span className="status-dot" />
-                {isConnected ? "Wallet connected" : "Demo mode · No wallet connected"}
+                {isConnected ? "Wallet connected" : "Demo mode · live data from a public wallet"}
               </div>
             </section>
 
@@ -394,13 +401,17 @@ export default function Dashboard() {
 
               <div>
                 <span>
-                  {isConnected ? "Connected wallet" : "No wallet connected"}
+                  {isConnected
+                    ? "Connected wallet"
+                    : "Viewing a public demo wallet · connect yours to see your own"}
                 </span>
 
                 <strong>
                   {isConnected
                     ? address
-                    : "Explore the dashboard with live market data"}
+                    : demoWallet
+                      ? `${demoWallet.label} (${shortAddress(demoWallet.address)})`
+                      : "Loading demo wallet…"}
                 </strong>
               </div>
 
@@ -424,11 +435,13 @@ export default function Dashboard() {
                 <strong>
                   {loadingBalance
                     ? "..."
-                    : `${balance ?? "0"} ETH`}
+                    : `${amount(balance ?? "0")} ETH`}
                 </strong>
 
                 <small>
-                  Native Ethereum balance
+                  {totalValueUsd !== null
+                    ? `Portfolio ≈ ${usd(totalValueUsd)}`
+                    : "Native Ethereum balance"}
                 </small>
               </div>
 
@@ -445,7 +458,7 @@ export default function Dashboard() {
                 </strong>
 
                 <small>
-                  ERC-20 assets detected
+                  Major ERC-20 tokens held
                 </small>
               </div>
 
@@ -517,7 +530,7 @@ export default function Dashboard() {
                     </strong>
 
                     <p>
-                      Connect a wallet to load live token balances.
+                      This wallet holds none of the tracked ERC-20 tokens.
                     </p>
                   </div>
                 </div>
@@ -529,21 +542,21 @@ export default function Dashboard() {
                       key={token.contractAddress}
                     >
                       <div className="asset-icon">
-                        ◉
+                        {token.symbol.slice(0, 1)}
                       </div>
 
                       <div>
                         <strong>
-                          Token
+                          {token.symbol}
                         </strong>
 
                         <span>
-                          {token.contractAddress}
+                          {token.name}
                         </span>
 
                         <small>
-                          Balance:{" "}
-                          {token.tokenBalance}
+                          {amount(token.balance)} {token.symbol}
+                          {token.valueUsd !== null && ` · ${usd(token.valueUsd)}`}
                         </small>
                       </div>
                     </div>
@@ -585,7 +598,7 @@ export default function Dashboard() {
                     </strong>
 
                     <p>
-                      Connect a wallet to load live NFT holdings.
+                      No NFTs found for this wallet.
                     </p>
                   </div>
                 </div>
@@ -598,6 +611,7 @@ export default function Dashboard() {
                     >
                       {nft.image ? (
                         <img
+                          loading="lazy"
                           src={nft.image}
                           alt={
                             nft.name ??
@@ -826,7 +840,7 @@ export default function Dashboard() {
                   <span>
                     AtlasAI uses available portfolio
                     data plus current market data.
-                    Connect a wallet for personalized analysis.
+                    In demo mode it analyses the demo wallet; connect yours for personalised analysis.
                   </span>
 
                   <button
@@ -965,7 +979,7 @@ export default function Dashboard() {
                     </strong>
 
                     <p>
-                      Connect a wallet to load live transaction history.
+                      No recent transactions for this wallet.
                     </p>
                   </div>
                 </div>

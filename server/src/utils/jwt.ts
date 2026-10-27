@@ -1,14 +1,8 @@
 import jwt from "jsonwebtoken";
-
-const JWT_SECRET =
-  process.env.JWT_SECRET || "atlasai-super-secret-key";
+import { getJwtSecret } from "../config/secrets";
 
 export const generateToken = (userId: string) => {
-  return jwt.sign(
-    { userId },
-    JWT_SECRET,
-    {
-      expiresIn: "7d",
-    }
-  );
+  return jwt.sign({ userId }, getJwtSecret(), {
+    expiresIn: "7d",
+  });
 };

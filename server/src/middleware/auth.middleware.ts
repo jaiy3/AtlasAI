@@ -1,35 +1,30 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import { getJwtSecret } from "../config/secrets";
 import { JwtPayload } from "../types/jwt";
-
-const JWT_SECRET =
-  process.env.JWT_SECRET || "atlasai-super-secret-key";
 
 export const authenticate = (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader?.startsWith("Bearer ")) {
+    return res.status(401).json({
+      success: false,
+      message: "No token provided",
+    });
+  }
+
   try {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader) {
-      return res.status(401).json({
-        success: false,
-        message: "No token provided",
-      });
-    }
-
-    const token = authHeader.replace("Bearer ", "");
-
     const decoded = jwt.verify(
-      token,
-      JWT_SECRET
+      authHeader.slice(7),
+      getJwtSecret()
     ) as JwtPayload;
 
     req.user = decoded;
-
-    next();
+    return next();
   } catch {
     return res.status(401).json({
       success: false,
