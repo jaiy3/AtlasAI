@@ -37,6 +37,10 @@ AtlasAI pulls balances, ERC-20 tokens, NFTs and transaction history from Alchemy
 
 ---
 
+## Architecture
+
+![AtlasAI architecture](docs/architecture.svg)
+
 ## Engineering highlights
 
 - **One normalised portfolio API.** `GET /api/portfolio/:address` fans out to four upstream sources in parallel (native balance, token balances, NFTs, transfers), prices the holdings and returns a single typed response with USD totals. NFT or price failures degrade that section instead of failing the request.
