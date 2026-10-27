@@ -301,7 +301,8 @@
   font-weight: 700;
 }
 
-.wallet-banner div:last-child {
+.wallet-banner div:last-child,
+.wallet-banner-text {
   display: flex;
   flex-direction: column;
   gap: 3px;

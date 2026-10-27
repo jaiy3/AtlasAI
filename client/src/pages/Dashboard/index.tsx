@@ -399,7 +399,7 @@ export default function Dashboard() {
                 ◈
               </div>
 
-              <div>
+              <div className="wallet-banner-text">
                 <span>
                   {isConnected
                     ? "Connected wallet"
@@ -454,7 +454,7 @@ export default function Dashboard() {
                 </div>
 
                 <strong>
-                  {portfolioSummary.tokens}
+                  {portfolioSummary.tokens.toLocaleString("en-US")}
                 </strong>
 
                 <small>
@@ -471,7 +471,7 @@ export default function Dashboard() {
                 </div>
 
                 <strong>
-                  {portfolioSummary.nfts}
+                  {portfolioSummary.nfts.toLocaleString("en-US")}
                 </strong>
 
                 <small>
@@ -488,7 +488,7 @@ export default function Dashboard() {
                 </div>
 
                 <strong>
-                  {portfolioSummary.transactions}
+                  {portfolioSummary.transactions.toLocaleString("en-US")}
                 </strong>
 
                 <small>
